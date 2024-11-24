@@ -1,0 +1,16 @@
+{
+    "name": "dynamic-portal",
+    "version": "0.1.0",
+    "description": "動的なポータルサイト",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "Yuya Aizu <gaku.kuro3298@gmail.com>",
+    "license": "Apache-2.0",
+    "devDependencies": {
+        "@types/node": "^22.9.3",
+        "typescript": "^5.7.2"
+    }
+}
