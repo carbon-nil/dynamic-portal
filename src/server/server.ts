@@ -1,16 +1,29 @@
 import http from "http";
 import path from "path";
-import fs, { promises as fsp } from "fs";
+import fs from "fs";
 
 import { log } from "../utils/logOutput";
 import { parseHTML } from "../utils/parseHTML";
+import { getHTML } from "../utils/getHTML";
 
 export function runServer(port: number) {
     const server: http.Server = http.createServer(
         (req: http.IncomingMessage, res: http.ServerResponse) => {
             req.setEncoding("utf-8");
             const data = parseHTML(req);
-            const relativePath = data.url.replace(/^\//, "");
+            const [relativePath, queryString] = data.url
+                .replace(/^\//, "")
+                .split("?", 2);
+            const query = queryString
+                ? queryString
+                      .split("&")
+                      .reduce((acc: Record<string, string>, curr: string) => {
+                          const [key, value] = curr.split("=");
+                          acc[key] = value;
+                          return acc;
+                      }, {})
+                : {};
+            log(`${relativePath} / ${JSON.stringify(query)}`, "Debug");
 
             if (relativePath === "") {
                 res.writeHead(303, {
@@ -32,7 +45,7 @@ export function runServer(port: number) {
                 return;
             }
 
-            fsp.readFile(path.join(process.cwd(), "resources", relativePath))
+            getHTML(path.join(process.cwd(), "resources", relativePath))
                 .then((content) => {
                     res.end(content);
                 })
