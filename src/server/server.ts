@@ -79,7 +79,9 @@ export function runServer(
                 );
                 return;
             } else if (
-                !fs.existsSync(path.join(process.cwd(), "dist", relativePath))
+                !fs.existsSync(
+                    path.join(process.cwd(), "resources", relativePath)
+                )
             ) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 res.writeHead(404, { "Content-Type": "text/plain" });
@@ -87,7 +89,7 @@ export function runServer(
                 return;
             }
 
-            getHTML(path.join(process.cwd(), "dist", relativePath))
+            getHTML(path.join(process.cwd(), "resources", relativePath))
                 .then((content) => {
                     res.end(content);
                 })
