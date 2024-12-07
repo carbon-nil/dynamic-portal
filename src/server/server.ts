@@ -5,7 +5,7 @@ import path from "path";
 import { getHTML } from "../utils/getHTML";
 import { log } from "../utils/logOutput";
 import { parseRequest } from "../utils/parseRequest";
-import { ping } from "./../utils/ping";
+import { checkPing, redirectServer } from "./redirect";
 
 export function runServer(
     port: number,
@@ -34,22 +34,17 @@ export function runServer(
 
             if (data.Host !== config.rootHost) {
                 if (config.childHost.some((host) => host === data.Host)) {
-                    ping(data.Host.split(":", 2)[0])
-                        .then((isAlive: boolean | null) => {
+                    checkPing(data.Host.split(":", 2)[0])
+                        .then((isAlive: boolean) => {
                             if (isAlive) {
-                                res.writeHead(302, {
-                                    // keep false to prevent multiple redirects
-                                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                                    Location: `http://${config.rootHost}/fallback.html?host=${data.Host}${relativePath !== "" ? "&path=" + relativePath : ""}`,
-                                    // Location: `http://${data.Host}/${relativePath}`,
-                                });
-                            } else {
-                                res.writeHead(302, {
-                                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                                    Location: `http://${config.rootHost}/fallback.html?host=${data.Host}${relativePath !== "" ? "&path=" + relativePath : ""}`,
-                                });
-                            }
-                            res.end();
+redirectServer(res, data.Host, relativePath);
+} else {
+redirectServer(
+                                    res,
+                                    config.rootHost,
+                                    `fallback.html?host=${data.Host}${relativePath !== "" ? "&path=" + relativePath : ""}`
+                                );
+}
                         })
                         .catch((err: Error) => {
                             res.writeHead(500, {
@@ -77,6 +72,36 @@ export function runServer(
                 res.end(
                     '<html><head><meta http-equiv="refresh" content="0;url=/index.html"></head></html>'
                 );
+                return;
+            } else if (relativePath === "api/redirect") {
+                res.writeHead(200, {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    "Content-Type": "text/event-stream",
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    Connection: "keep-alive",
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    "Cache-Control": "no-cache",
+                });
+                res.write("data: connected\n\n");
+
+                setInterval(() => {
+                    checkPing(query.host.split(/:/, 2)[0])
+                        .then((isAlive: boolean) => {
+                            if (isAlive) 
+                                res.write("data: redirect\n\n");
+                             else 
+                                res.write("data: ping\n\n");
+                            
+                        })
+                        .catch((err: Error) => {
+                            res.writeHead(500, {
+                                // eslint-disable-next-line @typescript-eslint/naming-convention
+                                "Content-Type": "text/plain",
+                            });
+                            res.end("Internal Server Error");
+                            log(`Error pinging host: ${err.message}`, "Error");
+                        });
+                }, 5000);
                 return;
             } else if (
                 !fs.existsSync(
