@@ -24,7 +24,9 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.15.0",
+    "@stylistic/eslint-plugin": "^2.11.0",
     "@types/node": "^22.9.3",
+    "@types/ping": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
     "eslint": "^9.15.0",
@@ -43,8 +45,13 @@
     }
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --cache --fix",
-    "*.ts": "bash -c tsc --noEmit",
+    "*.ts": [
+      "eslint --cache --fix",
+      "bash -c tsc --noEmit"
+    ],
     "*.{js,ts,json}": "prettier --write"
+  },
+  "dependencies": {
+    "ping": "^0.4.4"
   }
 }

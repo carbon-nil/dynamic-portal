@@ -1,5 +1,5 @@
 <head>
-    <title>Dynamic-Portal Example</title>
+    <title>Fallback Page</title>
 
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -34,7 +34,11 @@
 
 <body>
     <div>
-        <h1>Dynamic Portal Example</h1>
-        <p>Work in Progress</p>
+        <h1>Something went wrong</h1>
+        <p>Sorry, we couldn't load the host you attempted to connect. So we sent you to the fallback page.</p>
+        <h3 id="url"></h3>
+        <script src="npm:ping@0.4.4"></script>
+        <script src="fallback.js"></script>
+        <p><a href="/index.html">Go to the homepage of the portal site</a></p>
     </div>
 </body>

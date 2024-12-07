@@ -2,7 +2,7 @@ import { IncomingMessage } from "http";
 
 import { ParsedRequest } from "../types/ParsedRequest";
 
-export function parseHTML(req: IncomingMessage): ParsedRequest {
+export function parseRequest(req: IncomingMessage): ParsedRequest {
     const res: ParsedRequest = {
         method: req.method || "",
         url: req.url || "",

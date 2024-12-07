@@ -1,0 +1,5 @@
+{
+    "version": "0.1.0",
+    "rootHost": "127.0.0.1:3000",
+    "childHost": ["localhost:3000"]
+}
