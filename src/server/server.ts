@@ -37,12 +37,12 @@ export function runServer(
                     ping(data.Host.split(":", 2)[0])
                         .then((isAlive: boolean | null) => {
                             if (isAlive) {
-                                /* keep false to prevent multiple redirects
                                 res.writeHead(302, {
+                                    // keep false to prevent multiple redirects
                                     // eslint-disable-next-line @typescript-eslint/naming-convention
-                                    Location: `http://${data.Host}/${relativePath}`,
+                                    Location: `http://${config.rootHost}/fallback.html?host=${data.Host}${relativePath !== "" ? "&path=" + relativePath : ""}`,
+                                    // Location: `http://${data.Host}/${relativePath}`,
                                 });
-                                */
                             } else {
                                 res.writeHead(302, {
                                     // eslint-disable-next-line @typescript-eslint/naming-convention
