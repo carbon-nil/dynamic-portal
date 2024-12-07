@@ -2,7 +2,7 @@
   "name": "dynamic-portal",
   "version": "0.1.0",
   "description": "動的なポータルサイト",
-  "main": "dist/index.js",
+  "main": "public/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
     "dev:watch": "ts-node-dev --respawn src/index.ts",
@@ -43,6 +43,16 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
   },
+  "dependencies": {
+    "child_process-browserify": "^0.0.1",
+    "fs": "^0.0.1-security",
+    "net": "^1.0.2",
+    "os-browserify": "^0.3.0",
+    "ping": "^0.4.4",
+    "stream": "^0.0.3",
+    "timers": "^0.1.1",
+    "util": "^0.12.5"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -53,16 +63,6 @@
       "eslint --cache --fix",
       "bash -c tsc --noEmit"
     ],
-    "*.{js,ts,json}": "prettier --write"
-  },
-  "dependencies": {
-    "child_process-browserify": "^0.0.1",
-    "fs": "^0.0.1-security",
-    "net": "^1.0.2",
-    "os-browserify": "^0.3.0",
-    "ping": "^0.4.4",
-    "stream": "^0.0.3",
-    "timers": "^0.1.1",
-    "util": "^0.12.5"
+    "*.{ts,json}": "prettier --write"
   }
 }
