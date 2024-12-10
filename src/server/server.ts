@@ -37,14 +37,14 @@ export function runServer(
                     checkPing(data.Host.split(":", 2)[0])
                         .then((isAlive: boolean) => {
                             if (isAlive) {
-redirectServer(res, data.Host, relativePath);
-} else {
-redirectServer(
+                                redirectServer(res, data.Host, relativePath);
+                            } else {
+                                redirectServer(
                                     res,
                                     config.rootHost,
                                     `fallback.html?host=${data.Host}${relativePath !== "" ? "&path=" + relativePath : ""}`
                                 );
-}
+                            }
                         })
                         .catch((err: Error) => {
                             res.writeHead(500, {
@@ -87,11 +87,8 @@ redirectServer(
                 setInterval(() => {
                     checkPing(query.host.split(/:/, 2)[0])
                         .then((isAlive: boolean) => {
-                            if (isAlive) 
-                                res.write("data: redirect\n\n");
-                             else 
-                                res.write("data: ping\n\n");
-                            
+                            if (isAlive) res.write("data: redirect\n\n");
+                            else res.write("data: ping\n\n");
                         })
                         .catch((err: Error) => {
                             res.writeHead(500, {
