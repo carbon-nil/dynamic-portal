@@ -1,4 +1,3 @@
-const ping = require("ping");
 const path = require("path");
 
 //*
@@ -29,7 +28,7 @@ module.exports = {
 
 /*
 module.exports = {
-    mode: "development",
+    mode: "production",
     entry: "./lib/fallback.js",
     target: "node",
     output: {
