@@ -6,6 +6,7 @@ import { log } from "../utils/logOutput";
 /* @ts-expect-error */
 import URLCompressor from "../../lib/url-comp";
 
+// check if the host is alive
 export function checkPing(host: string): Promise<boolean> {
     return new Promise<boolean>((resolve) =>
         ping.sys.probe(host, (isAlive: boolean | null) => {
@@ -14,6 +15,7 @@ export function checkPing(host: string): Promise<boolean> {
     );
 }
 
+// redirect to the given host, path and query
 export function redirectServer(
     res: http.ServerResponse,
     host: string,
@@ -36,6 +38,7 @@ export function redirectServer(
     res.end();
 }
 
+// compress and expand query strings
 function compressQuery(query: Record<string, string>): string {
     return Object.keys(query)
         .map((key) => `${key}=${URLCompressor.compress(query[key])}`)

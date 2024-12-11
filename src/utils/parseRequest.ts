@@ -2,6 +2,8 @@ import { IncomingMessage } from "http";
 
 import { ParsedRequest } from "../types/ParsedRequest";
 
+// format html request to json
+// i wanted to use json type, but i got error, so i used altanative way
 export function parseRequest(req: IncomingMessage): ParsedRequest {
     const res: ParsedRequest = {
         method: req.method || "",

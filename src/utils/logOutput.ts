@@ -1,6 +1,7 @@
 import { IncomingMessage } from "http";
 
 export function log(message: string, attribute: string = "Info"): void {
+    // format the log and print it
     const date = new Date();
     const hh = ("00" + date.getHours()).slice(-2);
     const mm = ("00" + date.getMinutes()).slice(-2);
@@ -11,6 +12,7 @@ export function log(message: string, attribute: string = "Info"): void {
         console.log(`[${hh}:${mm}:${ss}] [${attribute}] ${row}`);
 }
 
+// unused function
 export function logHTML(message: IncomingMessage): void {
     let text = `${message.method} ${message.url} HTTP/${message.httpVersion}\n`;
 

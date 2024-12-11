@@ -13,6 +13,7 @@ export function runServer(
 ) {
     const server: http.Server = http.createServer(
         (req: http.IncomingMessage, res: http.ServerResponse) => {
+            // get request data
             req.setEncoding("utf-8");
             const data = parseRequest(req);
             const [relativePath, queryString] = data.url
@@ -33,8 +34,13 @@ export function runServer(
                 "Debug"
             );
 
+            // check if the host is the root host
+            // if not, check if the host is a child host
+            // if not, return 404
             if (data.Host !== config.rootHost) {
                 if (config.childHost.some((host) => host === data.Host)) {
+                    // check if the host is alive
+                    // if not, redirect to the root host
                     checkPing(data.Host.split(":", 2)[0])
                         .then((isAlive: boolean) => {
                             if (isAlive) {
@@ -75,6 +81,8 @@ export function runServer(
                 return;
             }
 
+            // check if the path is empty
+            // if so, redirect to the index page
             if (relativePath === "") {
                 res.writeHead(303, {
                     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -84,6 +92,8 @@ export function runServer(
                     '<html><head><meta http-equiv="refresh" content="0;url=/index.html"></head></html>'
                 );
                 return;
+                // check if the path is api/redirect
+                // if so, return the event stream
             } else if (relativePath === "api/redirect") {
                 res.writeHead(200, {
                     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -95,6 +105,8 @@ export function runServer(
                 });
                 res.write("data: connected\n\n");
 
+                // check if the host is alive
+                // if so, redirect to the host
                 const loop = setInterval(() => {
                     if (parsedQuery.h !== null) {
                         checkPing(parsedQuery.h.split(/:/, 2)[0])
@@ -122,6 +134,7 @@ export function runServer(
                     }
                 }, 5000);
                 return;
+                // check if the file exists
             } else if (
                 !fs.existsSync(
                     path.join(process.cwd(), "resources", relativePath)
@@ -133,6 +146,7 @@ export function runServer(
                 return;
             }
 
+            // return the file content
             getHTML(path.join(process.cwd(), "resources", relativePath))
                 .then((content) => {
                     res.end(content);
