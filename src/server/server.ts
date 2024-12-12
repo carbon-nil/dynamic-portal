@@ -69,7 +69,7 @@ export function runServer(
                                     "Debug"
                                 );
                                 http.get(
-                                    `http://${targetAlias}/index.html`,
+                                    `http://${targetAlias}`,
                                     (proxyRes) => {
                                         res.writeHead(
                                             proxyRes.statusCode || 200,
@@ -151,28 +151,26 @@ export function runServer(
                 // if so, redirect to the host
                 const loop = setInterval(() => {
                     if (parsedQuery.h !== null) {
-                        checkPing(parsedQuery.h.split(/:/, 2)[0])
-                            .then((isAlive: boolean) => {
-                                if (isAlive) {
-                                    res.write("data: redirect\n\n");
-                                    res.end();
-                                    clearInterval(loop);
-                                } else {
-                                    res.write("data: ping\n\n");
-                                }
-                            })
-                            .catch((err: Error) => {
-                                log(
-                                    `Error pinging host: ${err.message}`,
-                                    "Error"
-                                );
-                                res.writeHead(500, {
-                                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                                    "Content-Type": "text/plain",
-                                });
-                                res.end("Internal Server Error");
+                        log(`Pinging to ${parsedQuery.h}`, "Debug");
+                        http.get(`http://${parsedQuery.h}`, (proxyRes) => {
+                            if ((proxyRes.statusCode || 404) < 400) {
+                                res.write("data: redirect\n\n");
+                                res.end();
                                 clearInterval(loop);
+                            } else {
+                                res.write("data: ping\n\n");
+                            }
+                        }).on("error", (err) => {
+                            log(
+                                `Error proxying request: ${err.message}`,
+                                "Error"
+                            );
+                            res.writeHead(500, {
+                                // eslint-disable-next-line @typescript-eslint/naming-convention
+                                "Content-Type": "text/plain",
                             });
+                            res.end("Internal Server Error");
+                        });
                     }
                 }, 5000);
                 return;
