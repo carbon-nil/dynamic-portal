@@ -1,4 +1,3 @@
-import ping from "ping";
 import http from "http";
 
 import { log } from "../utils/logOutput";
@@ -8,11 +7,16 @@ import URLCompressor from "../../lib/url-comp";
 
 // check if the host is alive
 export function checkPing(host: string): Promise<boolean> {
-    return new Promise<boolean>((resolve) =>
-        ping.sys.probe(host, (isAlive: boolean | null) => {
-            resolve(isAlive || false);
-        })
-    );
+    // send http request to the child host
+    // if the host is alive, the promise will resolve to true
+    return new Promise((resolve) => {
+        const req = http.request({ host, method: "HEAD" }, (res) => {
+            resolve(res.statusCode === 200);
+        });
+
+        req.on("error", () => resolve(false));
+        req.end();
+    });
 }
 
 // redirect to the given host, path and query

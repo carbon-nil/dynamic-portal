@@ -40,16 +40,28 @@ export function runServer(
             if (data.Host !== config.rootHost) {
                 if (config.childHost.some((host) => host === data.Host)) {
                     // check if the host is alive
+                    // if so, return the response to the client
                     // if not, redirect to the root host
                     checkPing(data.Host.split(":", 2)[0])
                         .then((isAlive: boolean) => {
                             if (isAlive) {
-                                redirectServer(
-                                    res,
-                                    data.Host,
-                                    relativePath,
-                                    query
-                                );
+                                http.get(data.url, (proxyRes) => {
+                                    res.writeHead(
+                                        proxyRes.statusCode || 200,
+                                        proxyRes.headers
+                                    );
+                                    proxyRes.pipe(res, { end: true });
+                                }).on("error", (err) => {
+                                    log(
+                                        `Error proxying request: ${err.message}`,
+                                        "Error"
+                                    );
+                                    res.writeHead(500, {
+                                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                                        "Content-Type": "text/plain",
+                                    });
+                                    res.end("Internal Server Error");
+                                });
                             } else {
                                 redirectServer(
                                     res,
