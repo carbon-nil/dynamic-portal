@@ -10,19 +10,41 @@ function run() {
         .then((data) => {
             // Parse the config file
             const config = JSON.parse(data) as {
-                rootHost: string;
-                childHost: string[];
+                hosts: {
+                    name: string;
+                    root?: boolean;
+                    alias?: string;
+                }[];
             };
-            const port = parseInt(config.rootHost.split(/:/, 2)[1], 10) || 80;
+            const rootHost = config.hosts.find((host) => host.root);
+            const childHosts = config.hosts.filter((host) => !host.root);
+            if (rootHost === undefined)
+                throw new Error("No root host specified");
+            const parsedConfig = {
+                rootHost: {
+                    name: rootHost.name.split(/:/, 1)[0],
+                    port: Number(rootHost.name.split(/:/, 2)[1]) || 80,
+                },
+                childHosts: childHosts.map((host) => ({
+                    name: host.name.split(/:/, 1)[0],
+                    port: Number(host.name.split(/:/, 2)[1]) || 80,
+                    alias: host.alias
+                        ? {
+                              name: host.alias.split(/:/, 2)[0],
+                              port: Number(host.alias.split(/:/, 2)[1]) || 80,
+                          }
+                        : undefined,
+                })),
+            };
 
             // Start the server
-            runServer(port, config);
+            runServer(parsedConfig.rootHost, parsedConfig.childHosts);
         })
         .catch(async (err: Error) => {
             // Create the log file
             await fsp.writeFile(
                 path.join(process.cwd(), "config.json"),
-                `{"version":"${process.env.npm_package_version}","rootHost":"localhost","childHost":[]}`
+                `{"version":"${process.env.npm_package_version}","hosts":[{"name":"localhost","root":true}]}`
             );
 
             // Log the error and exit

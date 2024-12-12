@@ -8,8 +8,12 @@ import { parseRequest } from "../utils/parseRequest";
 import { checkPing, redirectServer, parseQuery } from "./redirect";
 
 export function runServer(
-    port: number,
-    config: { rootHost: string; childHost: string[] }
+    root: { name: string; port: number },
+    child: {
+        name: string;
+        port: number;
+        alias: { name: string; port: number } | undefined;
+    }[]
 ) {
     const server: http.Server = http.createServer(
         (req: http.IncomingMessage, res: http.ServerResponse) => {
@@ -37,21 +41,43 @@ export function runServer(
             // check if the host is the root host
             // if not, check if the host is a child host
             // if not, return 404
-            if (data.Host !== config.rootHost) {
-                if (config.childHost.some((host) => host === data.Host)) {
+            if (
+                data.Host.split(/:/, 2)[0] !== root.name ||
+                Number(data.Host.split(/:/, 2)[1] || 80) !== root.port
+            ) {
+                const target =
+                    child.find(
+                        (host) =>
+                            host.name +
+                                (host.port !== 80 ? ":" + host.port : "") ===
+                            data.Host
+                    ) || undefined;
+                const targetAlias =
+                    target?.alias?.name +
+                    (target?.alias?.port !== 80
+                        ? ":" + target?.alias?.port
+                        : "");
+                if (targetAlias !== undefined) {
                     // check if the host is alive
                     // if so, return the response to the client
                     // if not, redirect to the root host
-                    checkPing(data.Host.split(":", 2)[0])
+                    checkPing(targetAlias)
                         .then((isAlive: boolean) => {
                             if (isAlive) {
-                                http.get(data.url, (proxyRes) => {
-                                    res.writeHead(
-                                        proxyRes.statusCode || 200,
-                                        proxyRes.headers
-                                    );
-                                    proxyRes.pipe(res, { end: true });
-                                }).on("error", (err) => {
+                                log(
+                                    `Proxying request to ${targetAlias}`,
+                                    "Debug"
+                                );
+                                http.get(
+                                    `http://${targetAlias}/index.html`,
+                                    (proxyRes) => {
+                                        res.writeHead(
+                                            proxyRes.statusCode || 200,
+                                            proxyRes.headers
+                                        );
+                                        proxyRes.pipe(res, { end: true });
+                                    }
+                                ).on("error", (err) => {
                                     log(
                                         `Error proxying request: ${err.message}`,
                                         "Error"
@@ -65,7 +91,10 @@ export function runServer(
                             } else {
                                 redirectServer(
                                     res,
-                                    config.rootHost,
+                                    root.name +
+                                        (root.port !== 80
+                                            ? ":" + root.port
+                                            : ""),
                                     "fallback.html",
                                     Object.assign(
                                         { h: data.Host, p: relativePath },
@@ -84,6 +113,7 @@ export function runServer(
                             res.end("Internal Server Error");
                         });
                 } else {
+                    log(`Wrong host connection: ${data.Host}`, "Error");
                     res.writeHead(404, {
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         "Content-Type": "text/plain",
@@ -172,6 +202,6 @@ export function runServer(
         }
     );
 
-    server.listen(port);
-    log(`Server is running on port ${port}`);
+    server.listen(root.port);
+    log(`Server is running on port ${root.port}`);
 }
