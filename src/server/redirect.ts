@@ -10,11 +10,14 @@ export function checkPing(host: string): Promise<boolean> {
     // send http request to the child host
     // if the host is alive, the promise will resolve to true
     return new Promise((resolve) => {
-        const req = http.request({ host, method: "HEAD" }, (res) => {
-            resolve(res.statusCode === 200);
+        const req = http.get(host, (res) => {
+            resolve(res.statusCode !== undefined);
         });
 
-        req.on("error", () => resolve(false));
+        req.on("error", (error: Error) => {
+            log(`Error checking host: ${error.message}`, "Error");
+            resolve(false);
+        });
         req.end();
     });
 }

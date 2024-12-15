@@ -61,7 +61,7 @@ export function runServer(
                     // check if the host is alive
                     // if so, return the response to the client
                     // if not, redirect to the root host
-                    checkPing(targetAlias)
+                    checkPing(`http://${targetAlias}`)
                         .then((isAlive: boolean) => {
                             if (isAlive) {
                                 log(
@@ -69,7 +69,7 @@ export function runServer(
                                     "Debug"
                                 );
                                 http.get(
-                                    `http://${targetAlias}`,
+                                    `http://${targetAlias}${relativePath ? "/" + relativePath : ""}${queryString ? "?" + queryString : ""}`,
                                     (proxyRes) => {
                                         res.writeHead(
                                             proxyRes.statusCode || 200,
@@ -150,9 +150,23 @@ export function runServer(
                 // check if the host is alive
                 // if so, redirect to the host
                 const loop = setInterval(() => {
-                    if (parsedQuery.h !== null) {
-                        log(`Pinging to ${parsedQuery.h}`, "Debug");
-                        http.get(`http://${parsedQuery.h}`, (proxyRes) => {
+                    const target =
+                        child.find(
+                            (host) =>
+                                host.name +
+                                    (host.port !== 80
+                                        ? ":" + host.port
+                                        : "") ===
+                                parsedQuery.h
+                        ) || undefined;
+                    const targetAlias =
+                        target?.alias?.name +
+                        (target?.alias?.port !== 80
+                            ? ":" + target?.alias?.port
+                            : "");
+                    if (targetAlias !== undefined) {
+                        log(`Pinging to ${targetAlias}`, "Debug");
+                        http.get(`http://${targetAlias}`, (proxyRes) => {
                             if ((proxyRes.statusCode || 404) < 400) {
                                 res.write("data: redirect\n\n");
                                 res.end();
