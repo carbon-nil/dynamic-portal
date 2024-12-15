@@ -3,7 +3,7 @@
 バックエンドサーバーの状態に応じて、動的なリダイレクトを行うWebアプリケーション
 
 ## 実装例
-portal: http://www.ashpile.net
+portal: http://www.ashpile.net  
 local: http://portal.ashpile.net
 
 ## 使用方法
